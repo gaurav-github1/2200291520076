@@ -79,8 +79,8 @@ const StockPage = () => {
           >
             <option value={10}>10 minutes</option>
             <option value={30}>30 minutes</option>
-            <option value={60}>1 hour</option>
-            <option value={120}>2 hours</option>
+            <option value={60}>60 minutes</option>
+            <option value={120}>120 minutes</option>
             <option value={160}>160 minutes</option>
           </select>
         </div>

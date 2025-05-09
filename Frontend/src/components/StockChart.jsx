@@ -30,19 +30,34 @@ const StockChart = ({ ticker, minutes }) => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [debugInfo, setDebugInfo] = useState(null);
 
   useEffect(() => {
     const fetchStockData = async () => {
-      if (!ticker || !minutes) return;
+      if (!ticker || !minutes) {
+        setDebugInfo(`Missing parameters: ticker=${ticker}, minutes=${minutes}`);
+        return;
+      }
       
       try {
         setLoading(true);
+        setDebugInfo(`Fetching data for ${ticker} with timeframe ${minutes} minutes...`);
+        
         const data = await fetchStockAverage(ticker, minutes);
+        console.log("Received stock data:", data);
+        
+        if (!data || !data.priceHistory || data.priceHistory.length === 0) {
+          setDebugInfo(`Received empty data for ${ticker} with timeframe ${minutes} minutes.`);
+        } else {
+          setDebugInfo(null);
+        }
+        
         setStockData(data);
         setError(null);
       } catch (err) {
-        setError(`Failed to fetch stock data for ${ticker}`);
-        console.error(err);
+        console.error(`Error fetching stock data for ${ticker}:`, err);
+        setError(`Failed to fetch stock data for ${ticker}: ${err.message}`);
+        setDebugInfo(`API Error: ${err.message}`);
       } finally {
         setLoading(false);
       }
@@ -51,10 +66,16 @@ const StockChart = ({ ticker, minutes }) => {
     fetchStockData();
   }, [ticker, minutes]);
 
-  if (loading) return <div className="loading">Loading stock data...</div>;
+  if (loading) return <div className="loading">Loading stock data for {ticker}...</div>;
   if (error) return <div className="error">{error}</div>;
-  if (stockData.priceHistory.length === 0) {
-    return <div className="no-data">No data available for this stock in the selected time interval</div>;
+  if (!stockData || !stockData.priceHistory || stockData.priceHistory.length === 0) {
+    return (
+      <div className="no-data">
+        <p>No data available for {ticker} in the selected time interval ({minutes} minutes)</p>
+        {debugInfo && <p className="debug-info">Debug: {debugInfo}</p>}
+        <p>Try selecting a different stock or time interval</p>
+      </div>
+    );
   }
 
   const chartData = {
@@ -87,7 +108,7 @@ const StockChart = ({ ticker, minutes }) => {
       },
       title: {
         display: true,
-        text: `${ticker} Stock Price Over Time`,
+        text: `${ticker} Stock Price Over Time (${minutes} minutes)`,
       },
       tooltip: {
         callbacks: {
@@ -128,6 +149,7 @@ const StockChart = ({ ticker, minutes }) => {
       <div className="chart-container">
         <Line data={chartData} options={options} />
       </div>
+      {debugInfo && <p className="debug-info">Debug: {debugInfo}</p>}
     </div>
   );
 };
