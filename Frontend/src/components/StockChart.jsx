@@ -12,7 +12,6 @@ import {
 } from 'chart.js';
 import { fetchStockAverage } from '../services/api';
 
-// Register ChartJS components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -58,7 +57,6 @@ const StockChart = ({ ticker, minutes }) => {
     return <div className="no-data">No data available for this stock in the selected time interval</div>;
   }
 
-  // Format data for chart
   const chartData = {
     labels: stockData.priceHistory.map(item => {
       const date = new Date(item.lastUpdatedAt);
